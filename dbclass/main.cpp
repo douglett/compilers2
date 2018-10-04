@@ -164,9 +164,6 @@ private:
 				tok_next();
 				return 1;
 			}
-			// save line
-			// sub.statements.push_back({ sl });
-			// tok_next();
 			// parse statement
 			if (parse_statement(stmt))
 				sub.statements.push_back(stmt);
