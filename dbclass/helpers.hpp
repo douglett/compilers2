@@ -20,4 +20,4 @@ namespace helpers {
 			s += (i > 0 ? " " : "") + vs[i];
 		return s;
 	}
-}
+} // end helpers

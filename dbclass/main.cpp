@@ -3,25 +3,21 @@
 #include <fstream>
 #include <sstream>
 #include "helpers.hpp"
+#include "tokenize.hpp"
 using namespace std;
-
-struct Token {
-	string type;
-	string val;
-};
-
-// class SrcLine {
-// public:
-// 	int lineno;
-// 	string line;
-// 	vector<Token> toklist;
-// };
+using namespace dbas;
 
 class Def {
 public:
 	vector<string> constlist;
 	vector<string> dimlist;
 };
+
+// class Stmt {
+// public:
+// 	string line;
+// 	vector<Stmt> children;
+// };
 
 class Sub {
 public:
@@ -74,20 +70,22 @@ public:
 	}
 
 	void show() {
+		// defines
 		printf("--defblock--\n");
 		for (const auto& c : defblock.constlist)
 			printf("  [%s]\n", c.c_str());
 		for (const auto& d : defblock.dimlist)
 			printf("  [%s]\n", d.c_str());
+		// sub contents
 		printf("--subblock--\n");
 		for (const auto& sub : sublist) {
 			printf("SUB [%s]\n", sub.name.c_str());
 			for (const auto& c : sub.defblock.constlist)
-				printf("  [%s]\n", c.c_str());
+				printf("  [%s]\n", SrcLine(c).join().c_str());
 			for (const auto& d : sub.defblock.dimlist)
-				printf("  [%s]\n", d.c_str());
+				printf("  [%s]\n", SrcLine(d).join().c_str());
 			for (const auto& l : sub.lines)
-				printf("    [%s]\n", l.c_str());
+				printf("    [%s]\n", SrcLine(l).join().c_str());
 		}
 	}
 
@@ -123,7 +121,7 @@ private:
 		def = Def();
 		int count = 0;
 		// consts
-		printf("parsing consts\n");
+		// printf("parsing consts\n");
 		while (tok_exists()) {
 			auto tok = tok_tokenizeln();
 			if (tok[0].val != "const")  break;
@@ -133,13 +131,12 @@ private:
 			tok_next();
 		}
 		// dim
-		printf("parsing dim\n");
+		// printf("parsing dim\n");
 		while (tok_exists()) {
 			auto tok = tok_tokenizeln();
 			if (tok[0].val != "dim")  break;
 			// save
 			def.dimlist.push_back( lines[lineno] );
-			tok_show_line();
 			count++;
 			tok_next();
 		}
@@ -149,18 +146,17 @@ private:
 	int parse_sub_block(Sub& sub) {
 		sub = Sub();  // reset
 		// sub definition
-		printf("parsing sub\n");
+		// printf("parsing sub\n");
 		if (!tok_exists())  return 0;
 		auto tok = tok_tokenizeln();
 		if (!(tok.size() == 2 && tok[0].val == "sub"))  return 0;
 		// save sub
-		tok_show_line();
 		sub.name = tok[1].val;
 		tok_next();
 		// sub def block
 		parse_def_block(sub.defblock);
 		// sub body (statements)
-		printf("parsing sub body\n");
+		// printf("parsing sub body\n");
 		while (tok_exists()) {
 			auto tok = tok_tokenizeln();
 			// end sub
@@ -184,5 +180,6 @@ int main() {
 	Parse p;
 	if (p.load("test.bas")) return 1;
 	if (p.parse()) return 1;
+	printf("\n");
 	p.show();
 }
