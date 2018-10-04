@@ -13,17 +13,19 @@ public:
 	vector<string> dimlist;
 };
 
-// class Stmt {
-// public:
-// 	string line;
-// 	vector<Stmt> children;
-// };
+class Stmt {
+public:
+	int lineno;
+	string line;
+	vector<Stmt> children;
+};
 
 class Sub {
 public:
 	string name;
 	Def defblock;
-	vector<string> lines;
+	// vector<string> lines;
+	vector<Stmt> statements;
 };
 
 class Parse {
@@ -80,12 +82,14 @@ public:
 		printf("--subblock--\n");
 		for (const auto& sub : sublist) {
 			printf("SUB [%s]\n", sub.name.c_str());
-			for (const auto& c : sub.defblock.constlist)
-				printf("  [%s]\n", SrcLine(c).join().c_str());
-			for (const auto& d : sub.defblock.dimlist)
-				printf("  [%s]\n", SrcLine(d).join().c_str());
-			for (const auto& l : sub.lines)
-				printf("    [%s]\n", SrcLine(l).join().c_str());
+			for (const auto& n : sub.defblock.constlist)
+				printf("  [%s]\n", SrcLine(n).join().c_str());
+			for (const auto& n : sub.defblock.dimlist)
+				printf("  [%s]\n", SrcLine(n).join().c_str());
+			// for (const auto& l : sub.lines)
+			// 	printf("    [%s]\n", SrcLine(l).join().c_str());
+			for (const auto& n : sub.statements)
+				printf("    [%s]\n", SrcLine(n.line).join().c_str());
 		}
 	}
 
@@ -165,7 +169,8 @@ private:
 				return 1;
 			}
 			// save line
-			sub.lines.push_back( lines[lineno] );
+			// sub.lines.push_back( lines[lineno] );
+			sub.statements.push_back({ lineno, lines[lineno] });
 			tok_next();
 		}
 		// early EOF
