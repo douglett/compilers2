@@ -144,6 +144,7 @@ private:
 
 	int parse_sub_block(Sub& sub) {
 		sub = Sub();  // reset
+		Stmt stmt;
 		// sub definition
 		// printf("parsing sub\n");
 		if (!tok_exists())  return 0;
@@ -158,17 +159,29 @@ private:
 		// printf("parsing sub body\n");
 		while (tok_exists()) {
 			auto sl = tok_srcln();
-			// end sub
+			// check for end sub
 			if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == "sub") {
 				tok_next();
 				return 1;
 			}
 			// save line
-			sub.statements.push_back({ sl });
-			tok_next();
+			// sub.statements.push_back({ sl });
+			// tok_next();
+			// parse statement
+			if (parse_statement(stmt))
+				sub.statements.push_back(stmt);
+			else
+				throw string("expected statement at: "+to_string(lineno));
 		}
-		// early EOF
+		// early EOF before end sub
 		throw string("unexpected EOF in sub at: "+to_string(lineno));
+	}
+
+	int parse_statement(Stmt& stmt) {
+		stmt = Stmt();
+		stmt.line = tok_srcln();  // accept all
+		tok_next();
+		return 1;
 	}
 };
 

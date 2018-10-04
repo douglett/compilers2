@@ -18,7 +18,7 @@ public:
 	string line;
 	vector<Token> tok;
 
-	SrcLine(const string& str, int lno = -1) {
+	SrcLine(const string& str = "", int lno = -1) {
 		line = str, lineno = lno;
 		auto vs = helpers::split( str );
 		for (const auto& s : vs)  tok.push_back({ "?", s });
