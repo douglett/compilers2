@@ -24,7 +24,7 @@ public:
 		for (const auto& s : vs)  toklist.push_back({ "?", s });
 	}
 
-	string join() {
+	string join() const {
 		string s;
 		for (int i = 0; i < (int)toklist.size(); i++)
 			s += (i > 0 ? " " : "") + toklist[i].val;

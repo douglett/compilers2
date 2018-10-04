@@ -9,14 +9,13 @@ using namespace dbas;
 
 class Def {
 public:
-	vector<string> constlist;
-	vector<string> dimlist;
+	vector<SrcLine> constlist;
+	vector<SrcLine> dimlist;
 };
 
 class Stmt {
 public:
-	int lineno;
-	string line;
+	SrcLine line;
 	vector<Stmt> children;
 };
 
@@ -74,22 +73,20 @@ public:
 	void show() {
 		// defines
 		printf("--defblock--\n");
-		for (const auto& c : defblock.constlist)
-			printf("  [%s]\n", c.c_str());
-		for (const auto& d : defblock.dimlist)
-			printf("  [%s]\n", d.c_str());
+		for (const auto& sl : defblock.constlist)
+			printf("  [%s]\n", sl.join().c_str());
+		for (const auto& sl : defblock.dimlist)
+			printf("  [%s]\n", sl.join().c_str());
 		// sub contents
 		printf("--subblock--\n");
 		for (const auto& sub : sublist) {
 			printf("SUB [%s]\n", sub.name.c_str());
-			for (const auto& n : sub.defblock.constlist)
-				printf("  [%s]\n", SrcLine(n).join().c_str());
-			for (const auto& n : sub.defblock.dimlist)
-				printf("  [%s]\n", SrcLine(n).join().c_str());
-			// for (const auto& l : sub.lines)
-			// 	printf("    [%s]\n", SrcLine(l).join().c_str());
-			for (const auto& n : sub.statements)
-				printf("    [%s]\n", SrcLine(n.line).join().c_str());
+			for (const auto& sl : sub.defblock.constlist)
+				printf("  [%s]\n", sl.join().c_str());
+			for (const auto& sl : sub.defblock.dimlist)
+				printf("  [%s]\n", sl.join().c_str());
+			for (const auto& sl : sub.statements)
+				printf("    [%s]\n", sl.line.join().c_str());
 		}
 	}
 
@@ -130,7 +127,7 @@ private:
 			auto tok = tok_tokenizeln();
 			if (tok[0].val != "const")  break;
 			// save
-			def.constlist.push_back( lines[lineno] );
+			def.constlist.emplace_back( lines[lineno], lineno );
 			count++;
 			tok_next();
 		}
@@ -140,7 +137,7 @@ private:
 			auto tok = tok_tokenizeln();
 			if (tok[0].val != "dim")  break;
 			// save
-			def.dimlist.push_back( lines[lineno] );
+			def.dimlist.emplace_back( lines[lineno], lineno );
 			count++;
 			tok_next();
 		}
@@ -169,8 +166,7 @@ private:
 				return 1;
 			}
 			// save line
-			// sub.lines.push_back( lines[lineno] );
-			sub.statements.push_back({ lineno, lines[lineno] });
+			sub.statements.push_back({ SrcLine(lines[lineno], lineno) });
 			tok_next();
 		}
 		// early EOF
