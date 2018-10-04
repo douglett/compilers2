@@ -96,7 +96,8 @@ private:
 	}
 	void tok_clear_blank() {
 		while (tok_exists()) {
-			if (tok_tokenizeln().size() > 0)  break;
+			// if (tok_tokenizeln().size() > 0)  break;
+			if (tok_srcln().tok.size() > 0)  break;
 			lineno++;
 		}
 	}
@@ -105,14 +106,11 @@ private:
 		tok_clear_blank();
 		return tok_exists();
 	}
-	vector<Token> tok_tokenizeln() {
-		// tokenize current line
+	SrcLine tok_srcln() {
+		// return tokenized version of current line
 		if (!tok_exists())
 			throw string("missing token at line: " +to_string(lineno));
-		auto vs = helpers::split( lines[lineno] );
-		vector<Token> vt;
-		for (const auto& s : vs)  vt.push_back({ "?", s });
-		return vt;
+		return SrcLine( lines[lineno], lineno );
 	}
 	void tok_show_line() {
 		printf("	[%d] [%s]\n", lineno+1, lines[lineno].c_str());
@@ -124,20 +122,20 @@ private:
 		// consts
 		// printf("parsing consts\n");
 		while (tok_exists()) {
-			auto tok = tok_tokenizeln();
-			if (tok[0].val != "const")  break;
+			auto sl = tok_srcln();
+			if (sl.tok[0].val != "const")  break;
 			// save
-			def.constlist.emplace_back( lines[lineno], lineno );
+			def.constlist.push_back(sl);
 			count++;
 			tok_next();
 		}
 		// dim
 		// printf("parsing dim\n");
 		while (tok_exists()) {
-			auto tok = tok_tokenizeln();
-			if (tok[0].val != "dim")  break;
+			auto sl = tok_srcln();
+			if (sl.tok[0].val != "dim")  break;
 			// save
-			def.dimlist.emplace_back( lines[lineno], lineno );
+			def.dimlist.push_back(sl);
 			count++;
 			tok_next();
 		}
@@ -149,24 +147,24 @@ private:
 		// sub definition
 		// printf("parsing sub\n");
 		if (!tok_exists())  return 0;
-		auto tok = tok_tokenizeln();
-		if (!(tok.size() == 2 && tok[0].val == "sub"))  return 0;
+		auto sl = tok_srcln();
+		if (!(sl.tok.size() == 2 && sl.tok[0].val == "sub"))  return 0;
 		// save sub
-		sub.name = tok[1].val;
+		sub.name = sl.tok[1].val;
 		tok_next();
 		// sub def block
 		parse_def_block(sub.defblock);
 		// sub body (statements)
 		// printf("parsing sub body\n");
 		while (tok_exists()) {
-			auto tok = tok_tokenizeln();
+			auto sl = tok_srcln();
 			// end sub
-			if (tok.size() == 2 && tok[0].val == "end" && tok[1].val == "sub") {
+			if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == "sub") {
 				tok_next();
 				return 1;
 			}
 			// save line
-			sub.statements.push_back({ SrcLine(lines[lineno], lineno) });
+			sub.statements.push_back({ sl });
 			tok_next();
 		}
 		// early EOF

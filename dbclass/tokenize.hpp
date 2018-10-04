@@ -16,18 +16,18 @@ class SrcLine {
 public:
 	int lineno = -1;
 	string line;
-	vector<Token> toklist;
+	vector<Token> tok;
 
 	SrcLine(const string& str, int lno = -1) {
 		line = str, lineno = lno;
 		auto vs = helpers::split( str );
-		for (const auto& s : vs)  toklist.push_back({ "?", s });
+		for (const auto& s : vs)  tok.push_back({ "?", s });
 	}
 
 	string join() const {
 		string s;
-		for (int i = 0; i < (int)toklist.size(); i++)
-			s += (i > 0 ? " " : "") + toklist[i].val;
+		for (int i = 0; i < (int)tok.size(); i++)
+			s += (i > 0 ? " " : "") + tok[i].val;
 		return s;
 	}
 };
