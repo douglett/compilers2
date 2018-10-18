@@ -60,11 +60,11 @@ public:
 				sublist.push_back(sub);
 			// force EOF
 			if (tok_clear_blank(), tok_exists())
-				throw string("expected EOF at line: "+to_string(lineno));
+				throw string("expected EOF");
 			printf("--parse OK\n");
 		}
 		catch (const string& err) {
-			fprintf(stderr, "parse error: %s\n", err.c_str());
+			fprintf(stderr, "parse error: %s (line: %d)\n", err.c_str(), lineno+1);
 			return 1;
 		}
 		return 0;
@@ -81,13 +81,22 @@ public:
 		printf("--subblock--\n");
 		for (const auto& sub : sublist) {
 			printf("SUB [%s]\n", sub.name.c_str());
+			// defines
 			for (const auto& sl : sub.defblock.constlist)
 				printf("  [%s]\n", sl.join().c_str());
 			for (const auto& sl : sub.defblock.dimlist)
 				printf("  [%s]\n", sl.join().c_str());
+			// statement block
 			for (const auto& sl : sub.statements)
-				printf("    [%s]\n", sl.line.join().c_str());
+				show_stmt(sl, 4);
 		}
+	}
+
+	void show_stmt(const Stmt& stmt, int indent) {
+		string spacing(indent, ' ');
+		printf("%s[%s]\n", spacing.c_str(), stmt.line.join().c_str());
+		for (const auto& c : stmt.children)
+			show_stmt(c, indent+2);
 	}
 
 private:
@@ -96,7 +105,6 @@ private:
 	}
 	void tok_clear_blank() {
 		while (tok_exists()) {
-			// if (tok_tokenizeln().size() > 0)  break;
 			if (tok_srcln().tok.size() > 0)  break;
 			lineno++;
 		}
@@ -109,7 +117,7 @@ private:
 	SrcLine tok_srcln() {
 		// return tokenized version of current line
 		if (!tok_exists())
-			throw string("missing token at line: " +to_string(lineno));
+			throw string("missing token");
 		return SrcLine( lines[lineno], lineno );
 	}
 	void tok_show_line() {
@@ -155,29 +163,58 @@ private:
 		tok_next();
 		// sub def block
 		parse_def_block(sub.defblock);
-		// sub body (statements)
-		// printf("parsing sub body\n");
+		// sub body (statement block)
+		if (!parse_statement_block(stmt, "sub"))  return 0;
+		sub.statements = stmt.children;
+		return 1;
+	}
+
+	int parse_statement_block(Stmt& stmt, const string& type) {
+		Stmt stmt2;
 		while (tok_exists()) {
 			auto sl = tok_srcln();
-			// check for end sub
-			if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == "sub") {
+			// check for end [type]
+			if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == type) {
 				tok_next();
 				return 1;
 			}
 			// parse statement
-			if (parse_statement(stmt))
-				sub.statements.push_back(stmt);
+			if (parse_statement(stmt2))
+				stmt.children.push_back(stmt2);
 			else
-				throw string("expected statement at: "+to_string(lineno));
+				throw string("expected statement b");
 		}
-		// early EOF before end sub
-		throw string("unexpected EOF in sub at: "+to_string(lineno));
+		// early EOF before end of block
+		throw string("unexpected EOF in statement_block ["+type+"]");
 	}
 
 	int parse_statement(Stmt& stmt) {
 		stmt = Stmt();
-		stmt.line = tok_srcln();  // accept all
+		// auto sl = tok_srcln();
+		auto& sl = stmt.line = tok_srcln();
+		// make sure that the token actually exists
+		if (sl.tok.size() == 0)  return 0;  // this should never happen...
+		// if block
+		else if (sl.tok[0].val == "if")
+			return parse_if_block(stmt);
+		// other types of statement
+		else {
+			// stmt.line = sl;  // accept all
+			tok_next();
+			return 1;
+		}
+		// 
+		throw string("parse_statement: unknown error");
+	}
+
+	int parse_if_block(Stmt& stmt) {
+		stmt = Stmt();
+		// make sure we're in an if block
+		auto& sl = stmt.line = tok_srcln();
+		if (!(sl.tok.size() > 1 && sl.tok[0].val == "if"))  return 0;
 		tok_next();
+		// parse block
+		parse_statement_block(stmt, "if");
 		return 1;
 	}
 };
