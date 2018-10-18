@@ -7,10 +7,16 @@
 namespace dbas {
 using namespace std;
 
+
 struct Token {
 	string type;
 	string val;
 };
+struct Node {
+	string val;
+	vector<Node> sub;
+};
+
 
 class SrcLine {
 public:

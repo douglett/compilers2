@@ -177,22 +177,8 @@ private:
 		while (tok_exists()) {
 			auto sl = tok_srcln();
 			// check for end [type]
-			if (type == "sub") {
-				if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == "sub") {
-					tok_next();
-					return 1;
-				}
-			}
-			else if (type == "if") {
-				if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == "if") 
-					return tok_next(), 1;
-				// if (sl.tok.size() > 2 && sl.tok[0].val == "else" && sl.tok[1].val == "if") 
-				// 	return tok_next(), 1;
-				// if (sl.tok.size() == 1 && sl.tok[0].val == "else") 
-				// 	return tok_next(), 1;
-			}
-			else
-				throw string("unknown type: "+type);
+			if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == "if") 
+				return tok_next(), 1;
 			// parse statement
 			if (parse_statement(stmt2))
 				stmt.children.push_back(stmt2);
