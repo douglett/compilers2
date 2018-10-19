@@ -8,12 +8,15 @@ using namespace dbas;
 
 
 int main() {
-	printf("hello world\n");
+	printf("-- parse begin --\n");
 
 	string fname = "../testfiles/test-00.bas";
 	Parser p;
 	p.load(fname);
-	p.parse();
+	if (p.parse()) {
+		printf("-- parse failed --\n");
+		return 1;
+	}
 
 	// streamnode(cout, prog);
 	fstream fs("output.txt", ios::out);
@@ -21,5 +24,5 @@ int main() {
 	fs << fname << endl;
 	fs << "-----" << endl;
 	streamnode(fs, p.prog);
-	printf("parse OK\n");
+	printf("-- parse OK --\n");
 }

@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include <string>
 #include <vector>
 #include "helpers.hpp"
@@ -11,13 +10,12 @@ using namespace std;
 
 class Parser_Structure {
 public:
-	// input
-	vector<string> lines;
-	int lineno = 0;
+	// output
 	Node prog;
 
 	int parse(const string& fname, const vector<string>& lines) {
-		this->lines = lines, lineno = 0, prog = {};
+		this->fname = fname, this->lines = lines;  // copy input (TODO: save space here?)
+		lineno = 0, prog = {};  // reset state
 		Node tnode;
 		tok_clear_blank();
 		// global def block
@@ -33,15 +31,21 @@ public:
 
 	Node tok_rawline() {
 		return { "RAW_LINE", {
-			{ "<fname>" },
+			{ fname },
 			{ to_string(lineno+1) },
 			{ helpers::chomp(lines[lineno]) }
 		}};
 	}
 
+
 private:
+	// input
+	string fname;
+	vector<string> lines;
+	int lineno = 0;
 	// expressions
 	Parser_Expression expr;
+
 
 	// token management
 	int tok_exists() {
@@ -61,29 +65,6 @@ private:
 		if (tok_exists()) lineno++;
 		tok_clear_blank();
 		return tok_exists();
-	}
-
-
-	// validation
-	int is_alpha(char c) {
-		if (c >= 'a' && c <= 'z') return 1;
-		if (c >= 'A' && c <= 'Z') return 1;
-		if (c == '_') return 1;
-		return 0;
-	}
-	int is_numeric(char c) {
-		if (c >= '0' && c <= '9') return 1;
-		return 0;
-	}
-	int is_alphanumeric(char c) {
-		return is_alpha(c) || is_numeric(c);
-	}
-	int is_ident(const string& s) {
-		if (s.size() == 0) return 0;
-		if (!is_alpha(s[0])) return 0;
-		for (auto c : s)
-			if (!is_alphanumeric(c)) return 0;
-		return 1;
 	}
 
 
@@ -163,18 +144,18 @@ private:
 			n.kids.push_back({ "let" });
 			auto& let = n.kids.back();
 			// get variable name
-			if (!is_ident( tok[1] )) throw string("expected identifier");
+			if (!helpers::is_ident( tok[1] )) throw string("expected identifier");
 			let.kids.push_back({ tok[1] });
 			// parse expression
 			expr.parse( vector<string>( tok.begin()+3, tok.end() ) );
-			// assert("WIP here" == NULL);
+			throw string("WIP - let statement");
 		}
 
-		// n.kids.push_back(tok_rawline());
-		// tok_next();
-		// OK
-		// return 1;
-		throw string("unknown statement");
+		// accept all
+		n.kids.push_back(tok_rawline());
+		tok_next();
+		return 1;
+		// throw string("unknown statement");
 	}
 
 	int parse_if_block(Node& n) {

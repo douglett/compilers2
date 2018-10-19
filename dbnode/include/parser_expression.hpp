@@ -1,4 +1,6 @@
 #pragma once
+#include <string>
+#include <vector>
 #include "node.hpp"
 
 namespace dbas {
