@@ -3,7 +3,7 @@ dim b = 1
 
 sub main
 	dim a = 1
-	a = a + b
+	let a = a + b
 	if a = 1 then
 		call blah
 	end if
