@@ -58,15 +58,16 @@ public:
 
 	int parse(Node& n) {
 		try {
+			Node tnode;
 			tok_clear_blank();
 			// global def block
-			n.kids.push_back({ "def_block" });
-			parse_def_block(n.kids.back());
+			parse_def_block(tnode);
+			n.kids.push_back(tnode);
 			// parse subroutines
 			n.kids.push_back({ "subroutines" });
-			Node subnode;
-			while (parse_subroutine(subnode)) 
-				n.kids.back().kids.push_back(subnode);
+			auto& subs = n.kids.back();
+			while (parse_subroutine(tnode)) 
+				subs.kids.push_back(tnode);
 			return 0;
 		}
 		catch (const string& err) {
@@ -107,7 +108,9 @@ private:
 
 	// parsing block
 	int parse_def_block(Node& n) {
+		// initialise def_block node
 		int count = 0;
+		n = { "def_block" };
 		// consts
 		n.kids.push_back({ "const_list" });
 		auto& const_list = n.kids.back();
@@ -144,18 +147,69 @@ private:
 		string name = tok[1];
 		n = { name };
 		tok_next();
+		// def block
+		n.kids.push_back({ "temp" });
+		parse_def_block(n.kids.back());
 		// sub contents
+		Node tnode;
 		while (tok_exists()) {
 			tok = tok_tokline();
 			// check for end of sub
 			if (tok.size() == 2 && tok[0] == "end" && tok[1] == "sub")
 				return tok_next(), 1;
 			// sub contents
-			n.kids.push_back(tok_rawline());
-			tok_next();
+			if (parse_statement(tnode))
+				n.kids.push_back(tnode);
 		}
 		// early EOF before end of block
 		throw string("unexpected EOF in sub ["+name+"]");
+	}
+
+	int parse_statement(Node& n) {
+		// error checks
+		if (!tok_exists()) return 0;
+		// initialise node
+		n = { "statement" };
+		auto tok = tok_tokline();
+		// check for valid statements
+		if (tok[0] == "if") {
+			// n = { "if_block" };
+			return parse_if_block(n);
+		}
+		// unknown - just add for now
+		n.kids.push_back(tok_rawline());
+		// n.kids.push_back({ helpers::chomp( lines[lineno] ) });
+		tok_next();
+		// OK
+		return 1;
+	}
+
+	int parse_if_block(Node& n) {
+		// error checks
+		if (!tok_exists()) return 0;
+		auto tok = tok_tokline();
+		if (tok[0] != "if") throw string("expected 'if'");
+		if (tok.back() != "then") throw string("expected 'then' after 'if'");
+		// initialise node
+		n = { "if_block", {
+			{ "condition", {
+				tok_rawline()
+			}}
+		}};
+		tok_next();
+		// block contents
+		Node tnode;
+		while (tok_exists()) {
+			tok = tok_tokline();
+			// check for end of sub
+			if (tok.size() == 2 && tok[0] == "end" && tok[1] == "if")
+				return tok_next(), 1;
+			// sub contents
+			if (parse_statement(tnode))
+				n.kids.push_back(tnode);
+		}
+		// early EOF before end of block
+		throw string("unexpected EOF in if_block");
 	}
 };
 
@@ -165,12 +219,15 @@ int main() {
 
 	Node prog = { "test prog" };
 	Parser p;
-	p.load("../dbclass/test.bas");
+	string fname = "../testfiles/test-00.bas";
+	p.load(fname);
 	p.parse(prog);
 
 	// streamnode(cout, prog);
 	fstream fs("output.txt", ios::out);
-	fs << __DATE__ << " -- " << __TIME__ << endl << "-----" << endl;
+	fs << __DATE__ << " -- " << __TIME__ << endl;
+	fs << fname << endl;
+	fs << "-----" << endl;
 	streamnode(fs, prog);
 	printf("parse OK\n");
 }
