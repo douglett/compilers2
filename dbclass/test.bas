@@ -1,7 +1,9 @@
+const a = 10
 dim b = 1
 
 sub main
-	dim a = b + 1
+	dim a = 1
+	a = a + b
 	if a = 1 then
 		call blah
 	end if

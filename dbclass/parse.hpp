@@ -177,7 +177,7 @@ private:
 		while (tok_exists()) {
 			auto sl = tok_srcln();
 			// check for end [type]
-			if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == "if") 
+			if (sl.tok.size() == 2 && sl.tok[0].val == "end" && sl.tok[1].val == type) 
 				return tok_next(), 1;
 			// parse statement
 			if (parse_statement(stmt2))

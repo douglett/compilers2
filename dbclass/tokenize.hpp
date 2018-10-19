@@ -12,10 +12,10 @@ struct Token {
 	string type;
 	string val;
 };
-struct Node {
-	string val;
-	vector<Node> sub;
-};
+// struct Node {
+// 	string val;
+// 	vector<Node> sub;
+// };
 
 
 class SrcLine {
