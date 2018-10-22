@@ -87,7 +87,7 @@ private:
 			// const_list.kids.push_back(tok_rawline());
 			const_list.kids.push_back({
 				name, {
-					{ tok[3] }
+					{"LIT", {{ tok[3] }}}
 				}
 			});
 			count++;
@@ -193,12 +193,7 @@ private:
 			tok_next();
 			return 1;
 		}
-
-		// accept all
-		// n.kids.push_back(tok_rawline());
-		// tok_next();
-		// return 1;
-		// fall through
+		// unknown - fail
 		throw string("unknown statement");
 	}
 

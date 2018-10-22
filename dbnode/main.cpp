@@ -10,6 +10,10 @@ using namespace dbas;
 int main() {
 	printf("-- parse begin --\n");
 
+	// test expressions
+	// Parser_Expression pe;
+	// return pe.test();
+
 	string fname = "../testfiles/test-00.bas";
 	Parser p;
 	p.load(fname);
