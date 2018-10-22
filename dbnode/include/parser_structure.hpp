@@ -16,7 +16,7 @@ public:
 
 	int parse(const string& fname, const vector<string>& lines) {
 		this->fname = fname, this->lines = lines;  // copy input (TODO: save space here?)
-		lineno = 0, prog = {};  // reset state
+		lineno = 0, prog = { "program" };  // reset state
 		Node tnode;
 		tok_clear_blank();
 		// global def block
