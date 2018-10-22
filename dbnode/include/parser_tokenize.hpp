@@ -1,3 +1,56 @@
 #pragma once
+#include <string>
+#include <vector>
 
-// TODO
+namespace dbas {
+using namespace std;
+
+class Parser_Tokenize {
+public:
+	vector<string> parse(const string& str) {
+		return split_oper_ws(str);
+	}
+
+	int test() {
+		static const vector<string> TEST_CASES = {
+			"1+2 = 3+a + (12)",
+			"const a = 1"
+			// "a = \"hello world\""
+		};
+		for (const auto& test : TEST_CASES) {
+			printf("parsing: %s\n", test.c_str());
+			for (const auto& s : parse(test))
+				printf("[%s] ", s.c_str());
+			printf("\n");
+		}
+		return 0;
+	}
+
+private:
+	// special operators
+	const string OP_LIST = "+-*/=!()";
+
+	// split on operators and whitespace
+	vector<string> split_oper_ws(const string& str) {
+		vector<string> vs;
+		string s;
+		for (int i = 0; i < (int)str.length(); i++) {
+			// space - next word
+			if ( isspace(str[i]) ) {
+				if (s.length())  vs.push_back(s), s = "";  
+			}
+			// operator - split current word on operator, and add both
+			else if ( OP_LIST.find(string()+str[i]) != string::npos ) {
+				if (s.length())  vs.push_back(s), s = "";
+				vs.push_back(string() + str[i]);
+			}
+			// continue current word
+			else
+				s += str[i];
+		}
+		if (s.length()) vs.push_back(s);
+		return vs;
+	}
+};
+
+} // end dbas

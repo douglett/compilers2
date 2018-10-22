@@ -11,8 +11,8 @@ int main() {
 	printf("-- parse begin --\n");
 
 	// test expressions
-	// Parser_Expression pe;
-	// return pe.test();
+	// Parser_Tokenize pt;  return pt.test();
+	// Parser_Expression pe;  return pe.test();
 
 	string fname = "../testfiles/test-00.bas";
 	Parser p;

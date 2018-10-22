@@ -3,6 +3,7 @@
 #include <vector>
 #include "helpers.hpp"
 #include "node.hpp"
+#include "parser_tokenize.hpp"
 #include "parser_expression.hpp"
 
 namespace dbas {
@@ -43,7 +44,8 @@ private:
 	string fname;
 	vector<string> lines;
 	int lineno = 0;
-	// expressions
+	// sub-parsers
+	Parser_Tokenize tokz;
 	Parser_Expression expr;
 
 
@@ -53,7 +55,8 @@ private:
 	}
 	vector<string> tok_tokline() {
 		if (!tok_exists()) return {};
-		return helpers::split( lines[lineno] );
+		// return helpers::split( lines[lineno] );
+		return tokz.parse( lines[lineno] );
 	}
 	void tok_clear_blank() {
 		while (tok_exists()) {

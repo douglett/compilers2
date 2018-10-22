@@ -17,10 +17,8 @@ public:
 	int parse(Node& n, const vector<string>& vs) {
 		// initialise
 		n = { "expression" }, tok = vs, pos = 0;
-		// for (auto s : vs)  cout << s << " ";  
-		// cout << endl;
 		// throw string("expression parser not implemented");
-		n.kids.push_back( parse_expression() );
+		n.kids.push_back( parse_condition() );
 		// must be complete parse
 		if (curtok() != "<EOL>")
 			throw string("expression: expected <EOL>, got ["+curtok()+"] at pos "+to_string(pos));
@@ -29,13 +27,16 @@ public:
 
 	// helpful test function for odd expressions
 	int test() {
-		static const vector<string> TEST_CASES = { "(a + b) * (b + 2)" };
+		static const vector<string> TEST_CASES = { 
+			"( a + b ) * ( b + 2 )",  // space seperated for now
+			"a = 1"
+		};
 		Node n;
 		for (const auto& test : TEST_CASES)
 			try {
 				printf("parsing: [%s]\n", test.c_str());
 				// split
-				auto vs = helpers::split_special(test);
+				auto vs = helpers::split(test);
 				for (int i = 0; i < (int)vs.size(); i++)
 					printf("  %02d :: %s\n", i, vs[i].c_str());
 				// parse
@@ -130,7 +131,21 @@ private:
 		return n;
 	}
 
-	// Node parse_condition() {}
+	Node parse_condition() {
+		// lhs
+		Node n = parse_expression();
+		// comparison
+		if (expect("operator", "=") || expect("operator", "!") || expect("operator", ">") || expect("operator", "<")) {
+			auto op = lasttok();
+			if (op != "=" && expect("operator", "="))  op += lasttok();  // combination operators
+			auto nn = n;  // temp copy
+			n = { op, {
+				nn,
+				parse_expression()  // rhs
+			}};
+		}
+		return n;
+	}
 
 };
 

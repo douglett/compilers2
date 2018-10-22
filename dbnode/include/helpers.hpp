@@ -30,26 +30,6 @@ namespace helpers {
 		return str.substr( i, j + 1 - i );
 	}
 
-	// special string
-	const string OP_LIST = "+-*/=!()\"";
-	inline vector<string> split_special(const string& str) {
-		vector<string> vs;
-		string s;
-		for (int i = 0; i < (int)str.length(); i++) {
-			if ( isspace(str[i]) ) {
-				if (s.length())  vs.push_back(s), s = "";  
-			}
-			else if ( OP_LIST.find(string()+str[i]) ) {
-				if (s.length())  vs.push_back(s), s = "";
-				vs.push_back(string() + str[i]);
-			}
-			else
-				s += str[i];
-		}
-		if (s.length()) vs.push_back(s);
-		return vs;
-	}
-
 	// string validation
 	inline int is_alpha(char c) {
 		if (c >= 'a' && c <= 'z') return 1;
