@@ -52,10 +52,10 @@ private:
 				vs.push_back(string() + str[i]);
 			}
 			// strings
-			// else if (str[i] == '"') {
-			// 	if (s.length())  vs.push_back(s), s = "";
-			// 	split_string();
-			// }
+			else if (str[i] == '"') {
+				if (s.length())  vs.push_back(s), s = "";
+				vs.push_back( split_string(str, i) );
+			}
 			// continue current word
 			else
 				s += str[i];
@@ -65,8 +65,16 @@ private:
 	}
 
 	// string splitting
-	int split_string() {
-		throw string("string splitting unimplemented");
+	string split_string(const string& str, int& i) {
+		// throw string("string splitting unimplemented");
+		if (!(i < (int)str.length() && str[i] == '"'))
+			throw string("expected string start [\"]");
+		string s = "\"";
+		for (i++ ; i < (int)str.length(); i++) {
+			s += str[i];
+			if (str[i] == '"') return s;
+		}
+		throw string("unexpected end of string");
 	}
 
 };
