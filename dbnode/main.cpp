@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include "include/parser.hpp"
+#include "include/runtime_a.hpp"
 using namespace std;
 using namespace dbas;
 
@@ -14,6 +15,7 @@ int main() {
 	// Parser_Tokenize pt;  return pt.test();
 	// Parser_Expression pe;  return pe.test();
 
+	// parse
 	string fname = "../testfiles/test-00.bas";
 	Parser p;
 	p.load(fname);
@@ -22,6 +24,7 @@ int main() {
 		return 1;
 	}
 
+	// save to file
 	// streamnode(cout, prog);
 	fstream fs("output.txt", ios::out);
 	fs << __DATE__ << " -- " << __TIME__ << endl;
@@ -29,4 +32,9 @@ int main() {
 	fs << "-----" << endl;
 	streamnode(fs, p.prog);
 	printf("-- parse OK --\n");
+
+	// run
+	RunTreeA r;
+	r.prog = p.prog;
+	r.run();
 }

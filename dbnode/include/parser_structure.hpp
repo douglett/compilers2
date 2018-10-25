@@ -71,6 +71,15 @@ private:
 	}
 
 
+	// error checking
+	// int check_vars(const Node& n) {
+	// 	if (n.val == "VAR") {
+	// 		if (n.kids.size() != 1) throw string("bad VAR format");
+	// 	}
+	// 	return 0;
+	// }
+
+
 	// parsing block
 	int parse_def_block(Node& n) {
 		// initialise def_block node
