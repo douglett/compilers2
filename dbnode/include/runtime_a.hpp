@@ -47,6 +47,7 @@ private:
 		}
 	}
 
+	// WARNING: this doesn't care for const!
 	int& get_var(const string& name) {
 		if (vars.back().count(name)) return vars.back()[name];  // local
 		if (vars.at(0).count(name))  return vars[0][name];  // global

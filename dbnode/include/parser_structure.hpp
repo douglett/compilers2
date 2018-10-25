@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <algorithm>
 #include "helpers.hpp"
 #include "node.hpp"
 #include "parser_tokenize.hpp"
@@ -86,6 +87,7 @@ private:
 		int count = 0;
 		Node ntemp;
 		n = { "def_block" };
+		vector<string> name_list;
 		// consts
 		n.kids.push_back({ "const_list" });
 		auto& const_list = n.kids.back();
@@ -95,8 +97,11 @@ private:
 			if (tok.size() != 4 || tok[2] != "=") throw string("bad const format");
 			if (!helpers::is_ident(tok[1])) throw string("const: expected ident");
 			string name = tok[1];
+			// check for duplicates
+			if (find(name_list.begin(), name_list.end(), name) != name_list.end())
+				throw string("duplicate definition: "+name);
+			name_list.push_back(name);
 			// save
-			// const_list.kids.push_back(tok_rawline());
 			const_list.kids.push_back({
 				name, {
 					{"LIT", {{ tok[3] }}}
@@ -111,9 +116,13 @@ private:
 		while (tok_exists()) {
 			auto tok = tok_tokline();
 			if (tok[0] != "dim")  break;
-			if (tok.size() < 4 || tok[2] != "=") throw string("bad const format");
+			if (tok.size() < 4 || tok[2] != "=") throw string("bad dim format");
 			if (!helpers::is_ident(tok[1])) throw string("dim: expected ident");
 			string name = tok[1];
+			// check for duplicates
+			if (find(name_list.begin(), name_list.end(), name) != name_list.end())
+				throw string("duplicate definition: "+name);
+			name_list.push_back(name);
 			// save
 			// dim_list.kids.push_back(tok_rawline());
 			expr.parse(ntemp, tok.begin()+3, tok.end());
