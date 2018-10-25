@@ -34,22 +34,23 @@ private:
 	}
 
 	void run_def_block(const Node& n) {
-		if (n.val != "def_block")  throw string("expected def_block");
-		if (!(n.kids.size() == 2 && n.kids[0].val == "const_list" && n.kids[1].val == "dim_list"))
-			throw string("bad def_block format");
 		vars.push_back({});
 		// consts
-		for (auto& nn : n.kids[0].kids) {
+		for (auto& nn : n.kids.at(0).kids) {
 			auto& name = nn.val;
-			if (nn.kids.size() != 1) throw string("expected LIT");
-			vars.back()[name] = run_lit( nn.kids[0] );
+			vars.back()[name] = run_lit( nn.kids.at(0) );
 		}
 		// vars
 		for (auto& nn : n.kids[1].kids) {
 			auto& name = nn.val;
-			if (nn.kids.size() != 1) throw string("expected expression");
-			vars.back()[name] = run_expression( nn.kids[0] );
+			vars.back()[name] = run_expression( nn.kids.at(0) );
 		}
+	}
+
+	int& get_var(const string& name) {
+		if (vars.back().count(name)) return vars.back()[name];  // local
+		if (vars.at(0).count(name))  return vars[0][name];  // global
+		throw string("var not found: "+name);
 	}
 
 	int run_lit(const Node& n) {
@@ -59,23 +60,28 @@ private:
 	}
 
 	int run_expression(const Node& n) {
-		// current item
 		if (n.val == "LIT") return run_lit( n );
-		// one child
-		if (n.kids.size() == 1) {
-			if (n.val == "expression") return run_expression( n.kids[0] );
-		}
-		// 2 children
-		if (n.kids.size() == 2) {
-			if (n.val == "+") return run_expression(n.kids[0]) + run_expression(n.kids[1]);
+		if (n.val == "VAR") return get_var( n.kids.at(0).val );
+		if (n.val == "expression") return run_expression( n.kids.at(0) );
+		// operators
+		if (n.val.length() == 1 && string("+-*=").find(n.val[0]) != string::npos) {
+			auto lhs = run_expression( n.kids.at(0) );
+			auto rhs = run_expression( n.kids.at(1) );
+			switch (n.val[0]) {
+			case '+':  return lhs +  rhs;
+			case '-':  return lhs -  rhs;
+			case '*':  return lhs *  rhs;
+			case '/':  return lhs /  rhs;
+			case '=':  return lhs == rhs;
+			}
 		}
 		throw string("unknown expression: "+n.val);
 	}
 
 	void run_sub(const string& name) {
-		for (const auto& sub : prog.kids[1].kids)
+		for (const auto& sub : prog.kids.at(1).kids)
 			if (sub.val == name) {
-				run_def_block( sub.kids[0] );
+				run_def_block( sub.kids.at(0) );
 				for (int i = 1; i < (int)sub.kids.size(); i++)
 					run_statement( sub.kids[i] );
 				vars.pop_back();
@@ -85,20 +91,33 @@ private:
 	}
 
 	void run_statement(const Node& n) {
-		if (!(n.val == "statement" && n.kids.size() == 1))  throw string("expected statement");
-		auto& stmt = n.kids[0];
-		if (stmt.val == "if_block")  run_if_block( stmt );
-		if (stmt.val == "let") {
-			auto& name = stmt.kids[0].val;
-			vars.back()[name] = run_expression( stmt.kids[1] );
+		auto& stmt = n.kids.at(0);
+		if (stmt.val == "if_block") {
+			run_if_block( stmt );
 		}
-		// if (stmt.val == "call")  
-		// if (stmt.val == "print") 
-		throw string("unknown statement: "+stmt.val);
+		else if (stmt.val == "let") {
+			auto& name = stmt.kids.at(0).val;
+			get_var(name) = run_expression( stmt.kids.at(1) );
+		}
+		else if (stmt.val == "call") {
+			auto& name = stmt.kids.at(0).val;
+			run_sub(name);
+		}
+		else if (stmt.val == "print") {
+			string s;
+			for (auto v : stmt.kids)
+				s += v.val + " ";
+			printf("> %s\n", s.c_str());
+		}
+		else
+			throw string("unknown statement: "+stmt.val);
 	}
 
 	void run_if_block(const Node& n) {
-		if (n.val != "if_block")  throw string("expected if_block");
+		auto& condition = n.kids.at(0);
+		if (run_expression( condition.kids.at(0) ))
+			for (int i = 1; i < (int)n.kids.size(); i++)
+				run_statement(n.kids[i]);
 	}
 
 };
