@@ -73,11 +73,28 @@ private:
 
 
 	// error checking
-	// int check_vars(const Node& n) {
-	// 	if (n.val == "VAR") {
-	// 		if (n.kids.size() != 1) throw string("bad VAR format");
+	// int check_vars_exist() {
+	// 	// global vars
+	// 	auto gnames = get_var_names( "<global>", prog.kids.at(0) );
+	// 	for (const auto& sub : prog.kids.at(1)) {
+	// 		// local vars
+	// 		auto lnames = get_var_names( sub.val, sub.kids.at(0) );
+	// 		// combine
+	// 		auto names = gnames;
+	// 		names.insert(names.end(), lnames.begin(), lnames.end());
 	// 	}
 	// 	return 0;
+	// }
+	// vector<string> get_var_names(const string& name, const Node& def) {
+	// 	vector<string> vs;
+	// 	// check consts, then vars
+	// 	for (int i = 0; i <= 1; i++)
+	// 	for (auto& n : def.kids.at(i).kids) {
+	// 		if (find(vs.begin(), vs.end(), n.val) != vs.end())
+	// 			throw string("duplicate value in ["+name+"]: "+n.val);  // check for duplicates
+	// 		vs.push_back(n.val);
+	// 	}
+	// 	return vs;
 	// }
 
 
