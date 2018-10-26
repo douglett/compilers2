@@ -23,10 +23,11 @@ public:
 		// global def block
 		parse_def_block(tnode);
 		prog.kids.push_back(tnode);
+		varnameg = varnamel;  // variables are global
 		// parse subroutines
 		prog.kids.push_back({ "subroutines" });
 		auto& subs = prog.kids.back();
-		while (parse_subroutine(tnode)) 
+		while (parse_subroutine(tnode))
 			subs.kids.push_back(tnode);
 		return 0;
 	}
@@ -48,6 +49,8 @@ private:
 	// sub-parsers
 	Parser_Tokenize tokz;
 	Parser_Expression expr;
+	// checking
+	vector<string> varnameg, varnamel, subname;
 
 
 	// token management
@@ -71,6 +74,24 @@ private:
 		return tok_exists();
 	}
 
+
+	// error and sanity checking
+	int check_vars_exist(const Node& n) {
+		// make sure var was predefined
+		if (n.val == "VAR") {
+			if (n.kids.size() != 1)  throw string("var_check: unnamed var");
+			auto& name = n.kids[0].val;
+			for (const auto& vn : varnamel)
+				if (vn == name) return 1;
+			for (const auto& vn : varnameg)
+				if (vn == name) return 1;
+			throw string("var check: undefined var: "+name);
+		}
+		// check sub nodes
+		for (auto& nn : n.kids)
+			check_vars_exist(nn);
+		return 0;
+	}
 
 	// error checking
 	// int check_vars_exist() {
@@ -104,7 +125,8 @@ private:
 		int count = 0;
 		Node ntemp;
 		n = { "def_block" };
-		vector<string> name_list;
+		// vector<string> name_list;
+		auto& name_list = varnamel = {};
 		// consts
 		n.kids.push_back({ "const_list" });
 		auto& const_list = n.kids.back();
@@ -176,8 +198,10 @@ private:
 			if (tok.size() == 2 && tok[0] == "end" && tok[1] == "sub")
 				return tok_next(), 1;
 			// sub contents
-			if (parse_statement(tnode))
+			if (parse_statement(tnode)) {
+				check_vars_exist(tnode);  // basic error checking
 				n.kids.push_back(tnode);
+			}
 		}
 		// early EOF before end of block
 		throw string("unexpected EOF in sub ["+name+"]");
