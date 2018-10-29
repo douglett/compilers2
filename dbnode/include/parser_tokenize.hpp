@@ -51,6 +51,10 @@ private:
 				if (s.length())  vs.push_back(s), s = "";
 				vs.push_back(string() + str[i]);
 			}
+			// line comment start
+			else if (str[i] == '\'') {
+				break;
+			}
 			// strings
 			else if (str[i] == '"') {
 				if (s.length())  vs.push_back(s), s = "";

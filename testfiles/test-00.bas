@@ -1,3 +1,6 @@
+'doug basic example program
+'comments example woo
+'
 const a = 10
 const c = 5
 dim b = 1
@@ -11,6 +14,6 @@ sub main
 end sub
 
 sub blah
-	dim a = 5
+	'dim a = 5
 	print "hello world" a
 end sub
