@@ -23,18 +23,12 @@ int main() {
 		printf("-- parse failed --\n");
 		return 1;
 	}
-
-	// save to file
-	// streamnode(cout, prog);
-	fstream fs("output.txt", ios::out);
-	fs << __DATE__ << " -- " << __TIME__ << endl;
-	fs << fname << endl;
-	fs << "-----" << endl;
-	streamnode(fs, p.prog);
+	streamnodefile("output.txt", p.prog);  // save to file
 	printf("-- parse OK --\n");
 
 	// run
 	RunTreeA r;
 	r.prog = p.prog;
 	r.run();
+	r.debug_vars();
 }

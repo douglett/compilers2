@@ -23,4 +23,15 @@ void streamnode(ostream& stream, const Node& n, int indent=0) {
 	stream << pad << "}" << endl;
 }
 
+int streamnodefile(const string& fname, const Node& n) {
+	fstream fs(fname, ios::out);
+	if (!fs.is_open())
+		return fprintf(stderr, "error: could not open file: %s\n", fname.c_str()), 1;
+	fs << __DATE__ << " -- " << __TIME__ << endl;
+	fs << fname << endl;
+	fs << "-----" << endl;
+	streamnode(fs, n);
+	return 0;
+}
+
 } // end dbas

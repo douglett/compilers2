@@ -13,14 +13,22 @@ public:
 	int run() {
 		try {
 			run_prog(prog);
-			for (auto v : vars.back())
-				printf("  %10s : %4d\n", v.first.c_str(), v.second);
 			return 0;
 		}
 		catch (const string& err) {
 			cerr << "run error: " << err << endl;
 			return 1;
 		}
+	}
+
+	int debug_vars() {
+		printf("-------------------\n");
+		for (const auto& frame : vars) {
+			for (const auto& v : frame)
+				printf("  %10s : %4d\n", v.first.c_str(), v.second);
+			printf("-------------------\n");
+		}
+		return 0;
 	}
 
 private:
