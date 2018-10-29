@@ -59,5 +59,8 @@ namespace helpers {
 			if (!is_numeric(s[pos]))  return 0;
 		return 1;
 	}
+	inline int is_strlit(const string& s) {
+		return s.size() >= 2 && s[0] == '"' && s.back() == '"';
+	}
 
 } // end helpers

@@ -2,7 +2,6 @@
 #include <map>
 #include "node.hpp"
 using namespace std;
-// using namespace dbas;
 
 
 class RunTreeA {
@@ -106,8 +105,14 @@ private:
 		}
 		else if (stmt.val == "print") {
 			string s;
-			for (auto v : stmt.kids)
-				s += v.val + " ";
+			for (auto v : stmt.kids) {
+				if (v.val == "STR_LIT")
+					s += v.kids.at(0).val + " ";
+				else if (v.val == "VAR")
+					s += to_string(get_var( v.kids.at(0).val )) + " ";
+				else 
+					throw string("unknown in string: "+v.val);
+			}
 			printf("> %s\n", s.c_str());
 		}
 		else

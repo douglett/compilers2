@@ -263,8 +263,18 @@ private:
 		}
 		if (tok[0] == "print") {
 			ntemp = { "print" };
-			for (int i = 1; i < (int)tok.size(); i++)
-				ntemp.kids.push_back({ tok[i] });
+			for (int i = 1; i < (int)tok.size(); i++) {
+				if (helpers::is_strlit(tok[i]))
+					ntemp.kids.push_back({ "STR_LIT", {
+						{ tok[i] }
+					}});
+				else if (helpers::is_ident(tok[i]))
+					ntemp.kids.push_back({ "VAR", {
+						{ tok[i] }
+					}});
+				else
+					throw string("unexpected: "+tok[i]);
+			}
 			// parse OK
 			n.kids.push_back(ntemp);
 			tok_next();
