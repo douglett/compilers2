@@ -16,7 +16,7 @@ int main() {
 	// Parser_Expression pe;  return pe.test();
 
 	// parse
-	string fname = "../testfiles/test-00.bas";
+	string fname = "../testfiles/test-01-fib.bas";
 	Parser p;
 	p.load(fname);
 	if (p.parse()) {
