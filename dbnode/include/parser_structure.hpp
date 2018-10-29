@@ -19,11 +19,12 @@ public:
 		this->fname = fname, this->lines = lines;  // copy input (TODO: save space here?)
 		lineno = 0, prog = { "program" };  // reset state
 		Node tnode;
-		tok_clear_blank();
+		// pre-parse
+		pre_parse_subs();
 		// global def block
+		tok_clear_blank();
 		parse_def_block(tnode);
 		prog.kids.push_back(tnode);
-		varnameg = varnamel;  // variables are global
 		// parse subroutines
 		prog.kids.push_back({ "subroutines" });
 		auto& subs = prog.kids.back();
@@ -50,7 +51,7 @@ private:
 	Parser_Tokenize tokz;
 	Parser_Expression expr;
 	// checking
-	vector<string> varnameg, varnamel, subname;
+	vector<pair<string, string>> deflist;
 
 
 	// token management
@@ -81,10 +82,9 @@ private:
 		if (n.val == "VAR") {
 			if (n.kids.size() != 1)  throw string("var_check: unnamed var");
 			auto& name = n.kids[0].val;
-			for (const auto& vn : varnamel)
-				if (vn == name) return 1;
-			for (const auto& vn : varnameg)
-				if (vn == name) return 1;
+			for (const auto& def : deflist)
+				if ((def.first == "const" || def.first == "var") && def.second == name)
+					return 1;
 			throw string("var check: undefined var: "+name);
 		}
 		// check sub nodes
@@ -93,30 +93,43 @@ private:
 		return 0;
 	}
 
-	// error checking
-	// int check_vars_exist() {
-	// 	// global vars
-	// 	auto gnames = get_var_names( "<global>", prog.kids.at(0) );
-	// 	for (const auto& sub : prog.kids.at(1)) {
-	// 		// local vars
-	// 		auto lnames = get_var_names( sub.val, sub.kids.at(0) );
-	// 		// combine
-	// 		auto names = gnames;
-	// 		names.insert(names.end(), lnames.begin(), lnames.end());
-	// 	}
-	// 	return 0;
-	// }
-	// vector<string> get_var_names(const string& name, const Node& def) {
-	// 	vector<string> vs;
-	// 	// check consts, then vars
-	// 	for (int i = 0; i <= 1; i++)
-	// 	for (auto& n : def.kids.at(i).kids) {
-	// 		if (find(vs.begin(), vs.end(), n.val) != vs.end())
-	// 			throw string("duplicate value in ["+name+"]: "+n.val);  // check for duplicates
-	// 		vs.push_back(n.val);
-	// 	}
-	// 	return vs;
-	// }
+	int check_def_duplicate(const string& name, int start=0) {
+		for (int i = start; i < (int)deflist.size(); i++)
+			if (name == deflist[i].second)
+				throw string("duplicate definition: "+name);
+		return 0;
+	}
+
+	int check_def_isvar(const string& name, int start=0) {
+		for (int i = start; i < (int)deflist.size(); i++)
+			if (deflist[i].first == "var" && deflist[i].second == name)
+				return 1;
+		throw string("var not defined: "+name);
+	}
+
+	int check_def_issub(const string& name) {
+		for (int i = 0; i < (int)deflist.size(); i++)
+			if (deflist[i].first == "sub" && deflist[i].second == name)
+				return 1;
+		throw string("sub not defined: "+name);	
+	}
+
+
+	// pre-parsing
+	int pre_parse_subs() {
+		deflist = {};  // subs listed first
+		lineno = 0;
+		while (tok_exists()) {
+			auto tok = tok_tokline();
+			if (tok.size() == 2 && tok[0] == "sub" && helpers::is_ident(tok[1])) {
+				check_def_duplicate(tok[1]);
+				deflist.push_back({ "sub", tok[1] });
+			}
+			tok_next();
+		}
+		lineno = 0;
+		return 0;
+	}
 
 
 	// parsing block
@@ -125,8 +138,7 @@ private:
 		int count = 0;
 		Node ntemp;
 		n = { "def_block" };
-		// vector<string> name_list;
-		auto& name_list = varnamel = {};
+		int top = deflist.size();
 		// consts
 		n.kids.push_back({ "const_list" });
 		auto& const_list = n.kids.back();
@@ -137,9 +149,8 @@ private:
 			if (!helpers::is_ident(tok[1])) throw string("const: expected ident");
 			string name = tok[1];
 			// check for duplicates
-			if (find(name_list.begin(), name_list.end(), name) != name_list.end())
-				throw string("duplicate definition: "+name);
-			name_list.push_back(name);
+			check_def_duplicate(name, top);
+			deflist.push_back({ "const", name });
 			// save
 			const_list.kids.push_back({
 				name, {
@@ -159,9 +170,8 @@ private:
 			if (!helpers::is_ident(tok[1])) throw string("dim: expected ident");
 			string name = tok[1];
 			// check for duplicates
-			if (find(name_list.begin(), name_list.end(), name) != name_list.end())
-				throw string("duplicate definition: "+name);
-			name_list.push_back(name);
+			check_def_duplicate(name, top);
+			deflist.push_back({ "var", name });
 			// save
 			// dim_list.kids.push_back(tok_rawline());
 			expr.parse(ntemp, tok.begin()+3, tok.end());
@@ -224,6 +234,7 @@ private:
 			if (tok.size() < 4 || tok[2] != "=") throw string("bad let format");
 			if (!helpers::is_ident(tok[1])) throw string("let: expected ident");
 			string name = tok[1];
+			check_def_isvar(name);
 			// parse expression
 			expr.parse( ntemp, tok.begin()+3, tok.end() );
 			n.kids.push_back({
@@ -238,6 +249,7 @@ private:
 		if (tok[0] == "call") {
 			if (tok.size() != 2 || !helpers::is_ident(tok[1])) throw string("invalid call statement");
 			string name = tok[1];
+			check_def_issub(name);
 			n.kids.push_back({
 				"call", {
 					{ name }

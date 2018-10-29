@@ -8,7 +8,6 @@ sub main
 	if a = 1 + 1 + 2 then
 		call blah
 	end if
-	let c = 10
 end sub
 
 sub blah
