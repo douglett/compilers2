@@ -198,6 +198,7 @@ private:
 		n = { name };
 		tok_next();
 		// def block
+		int top = deflist.size();
 		n.kids.push_back({ "temp" });
 		parse_def_block(n.kids.back());
 		// sub contents
@@ -205,8 +206,10 @@ private:
 		while (tok_exists()) {
 			tok = tok_tokline();
 			// check for end of sub
-			if (tok.size() == 2 && tok[0] == "end" && tok[1] == "sub")
+			if (tok.size() == 2 && tok[0] == "end" && tok[1] == "sub") {
+				deflist.erase(deflist.begin()+top);  // reduce def stack
 				return tok_next(), 1;
+			}
 			// sub contents
 			if (parse_statement(tnode)) {
 				check_vars_exist(tnode);  // basic error checking

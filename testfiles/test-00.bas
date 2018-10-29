@@ -11,5 +11,6 @@ sub main
 end sub
 
 sub blah
+	dim a = 2
 	print "hello world"
 end sub
