@@ -271,7 +271,7 @@ private:
 			for (int i = 1; i < (int)tok.size(); i++) {
 				if (helpers::is_strlit(tok[i]))
 					ntemp.kids.push_back({ "STR_LIT", {
-						{ tok[i] }
+						{ tok[i].substr(1, tok[i].length()-2) }
 					}});
 				else if (helpers::is_ident(tok[i]))
 					ntemp.kids.push_back({ "VAR", {
