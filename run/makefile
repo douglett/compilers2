@@ -1,5 +1,5 @@
 SRC=main.cpp
-HED=**/*.hpp
+HED=../**/*.hpp
 OUT=main.out
 
 $(OUT): $(SRC) $(HED)

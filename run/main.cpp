@@ -2,8 +2,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include "include/parser.hpp"
-#include "include/runtime_a.hpp"
+#include "../include/parser.hpp"
+#include "../include/runtime_a.hpp"
 using namespace std;
 using namespace dbas;
 
