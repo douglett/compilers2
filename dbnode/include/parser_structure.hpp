@@ -166,15 +166,20 @@ private:
 		while (tok_exists()) {
 			auto tok = tok_tokline();
 			if (tok[0] != "dim")  break;
-			if (tok.size() < 4 || tok[2] != "=") throw string("bad dim format");
-			if (!helpers::is_ident(tok[1])) throw string("dim: expected ident");
+			if (tok.size() < 2 || !helpers::is_ident(tok[1])) throw string("dim: expected ident");
 			string name = tok[1];
 			// check for duplicates
 			check_def_duplicate(name, top);
 			deflist.push_back({ "var", name });
+			// parse initial value expression
+			if (tok.size() == 2)
+				ntemp = { "LIT", { {"0"} }};
+			else if (tok.size() >= 4 && tok[2] == "=")
+				expr.parse(ntemp, tok.begin()+3, tok.end());
+			else
+				throw string("bad dim format");
 			// save
 			// dim_list.kids.push_back(tok_rawline());
-			expr.parse(ntemp, tok.begin()+3, tok.end());
 			dim_list.kids.push_back({
 				name, {
 					ntemp
@@ -207,7 +212,7 @@ private:
 			tok = tok_tokline();
 			// check for end of sub
 			if (tok.size() == 2 && tok[0] == "end" && tok[1] == "sub") {
-				deflist.erase(deflist.begin()+top);  // reduce def stack
+				deflist.erase(deflist.begin()+top, deflist.end());  // reduce def stack
 				return tok_next(), 1;
 			}
 			// sub contents

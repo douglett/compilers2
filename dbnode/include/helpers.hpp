@@ -62,5 +62,10 @@ namespace helpers {
 	inline int is_strlit(const string& s) {
 		return s.size() >= 2 && s[0] == '"' && s.back() == '"';
 	}
+	inline int str_match_any(const string& str, const vector<string>& vs) {
+		for (const auto& s : vs)
+			if (s == str) return 1;
+		return 0;
+	}
 
 } // end helpers

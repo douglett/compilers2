@@ -1,17 +1,22 @@
 'fibonnaci sequence
 '
-dim a = 1
+const max_level = 10
+dim level = 0
+dim a = 0
 dim b = 1
-dim level = 5
 
 sub main
 	call fib
 end sub
 
 sub fib
-	print "fib"
-	if level >= 0 then
+	dim temp
+	print "fib" b
+	if level < max_level then
+		let level = level + 1
+		let temp = b
+		let b = b + a
+		let a = temp
 		call fib
-		let level = level - 1
 	end if
 end sub

@@ -72,16 +72,17 @@ private:
 		if (n.val == "VAR") return get_var( n.kids.at(0).val );
 		if (n.val == "expression") return run_expression( n.kids.at(0) );
 		// operators
-		if (n.val.length() == 1 && string("+-*=").find(n.val[0]) != string::npos) {
+		static const vector<string> OP_LIST = { "+","-","*","/","=","<",">=" };
+		if (helpers::str_match_any( n.val, OP_LIST )) {
 			auto lhs = run_expression( n.kids.at(0) );
 			auto rhs = run_expression( n.kids.at(1) );
-			switch (n.val[0]) {
-			case '+':  return lhs +  rhs;
-			case '-':  return lhs -  rhs;
-			case '*':  return lhs *  rhs;
-			case '/':  return lhs /  rhs;
-			case '=':  return lhs == rhs;
-			}
+			if (n.val == "+" )  return lhs +  rhs;
+			if (n.val == "-" )  return lhs -  rhs;
+			if (n.val == "*" )  return lhs *  rhs;
+			if (n.val == "/" )  return lhs /  rhs;
+			if (n.val == "=" )  return lhs == rhs;
+			if (n.val == "<" )  return lhs <  rhs;
+			if (n.val == ">=")  return lhs >= rhs;
 		}
 		throw string("unknown expression: "+n.val);
 	}
