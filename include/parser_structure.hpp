@@ -136,7 +136,6 @@ private:
 	int parse_def_block(Node& n) {
 		// initialise def_block node
 		int count = 0;
-		Node ntemp;
 		n = { "def_block" };
 		int top = deflist.size();
 		// consts
@@ -154,7 +153,9 @@ private:
 			// save
 			const_list.kids.push_back({
 				name, {
-					{"LIT", {{ tok[3] }}}
+					{ "value", {
+						{"LIT", {{ tok[3] }}}
+					}}
 				}
 			});
 			count++;
@@ -172,17 +173,25 @@ private:
 			check_def_duplicate(name, top);
 			deflist.push_back({ "var", name });
 			// parse initial value expression
+			Node dlen, dvalue;
 			if (tok.size() == 2)
-				ntemp = { "LIT", { {"0"} }};
+				dlen   = { "LIT", { {"1"} }},
+				dvalue = { "LIT", { {"0"} }};
 			else if (tok.size() >= 4 && tok[2] == "=")
-				expr.parse(ntemp, tok.begin()+3, tok.end());
+				dlen   = { "LIT", { {"1"} }},
+				expr.parse( dvalue, tok.begin()+3, tok.end() );
+			// else if (tok.size() >= 5 && tok[2] == "[" && helpers::is_integer(tok[3]) && tok[4] == "]")
+			// 	ntemp = { "array", { 
+			// 		{ "LIT", { {tok[3]} }}
+			// 	}};
 			else
 				throw string("bad dim format");
 			// save
 			// dim_list.kids.push_back(tok_rawline());
 			dim_list.kids.push_back({
 				name, {
-					ntemp
+					{ "length", { dlen   }},
+					{ "value",  { dvalue }}
 				}
 			});
 			count++;

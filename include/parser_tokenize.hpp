@@ -35,7 +35,7 @@ public:
 
 private:
 	// special operators
-	const string OP_LIST = "+-*/=!()";
+	const string OP_LIST = "+-*/=!()[]";
 
 	// split on operators and whitespace
 	vector<string> split_oper_ws(const string& str) {

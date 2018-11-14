@@ -40,17 +40,26 @@ private:
 		run_sub("main");
 	}
 
+	const Node& get_named_node(const Node& n, const string& name) {
+		for (auto& n : n.kids)
+			if (n.val == name) return n;
+		throw string("missing node name: "+name);
+	}
+
 	void run_def_block(const Node& n) {
 		vars.push_back({});
 		// consts
 		for (auto& nn : n.kids.at(0).kids) {
 			auto& name = nn.val;
-			vars.back()[name] = run_lit( nn.kids.at(0) );
+			auto& val = get_named_node(nn, "value");
+			vars.back()[name] = run_lit( val.kids.at(0) );
 		}
 		// vars
 		for (auto& nn : n.kids[1].kids) {
 			auto& name = nn.val;
-			vars.back()[name] = run_expression( nn.kids.at(0) );
+			auto& val = get_named_node(nn, "value");
+			// auto& len = get_named_node(nn, "length");
+			vars.back()[name] = run_expression( val.kids.at(0) );
 		}
 	}
 
