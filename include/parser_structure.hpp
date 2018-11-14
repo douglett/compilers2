@@ -180,9 +180,9 @@ private:
 			else if (tok.size() >= 4 && tok[2] == "=")
 				dlen   = { "LIT", { {"1"} }},
 				expr.parse( dvalue, tok.begin()+3, tok.end() );
-			// else if (tok.size() >= 5 && tok[2] == "[" && helpers::is_integer(tok[3]) && tok[4] == "]")
-			// 	dlen   = { "LIT", { {tok[3]} }},
-			// 	dvalue = { "LIT", { {"0"} }};
+			else if (tok.size() >= 5 && tok[2] == "[" && helpers::is_integer(tok[3]) && tok[4] == "]")
+				dlen   = { "LIT", { {tok[3]} }},
+				dvalue = { "LIT", { {"0"} }};
 			else
 				throw string("bad dim format");
 			// save

@@ -8,6 +8,13 @@ using namespace std;
 using namespace dbas;
 
 
+vector<string> testfiles = {
+	"test-00",
+	"test-01-fib",
+	"test-02-array"
+};
+
+
 int main() {
 	printf("-- parse begin --\n");
 
@@ -16,7 +23,7 @@ int main() {
 	// Parser_Expression pe;  return pe.test();
 
 	// parse
-	string fname = "../testfiles/test-02-array.bas";
+	string fname = "../testfiles/" + testfiles[2] + ".bas";
 	Parser p;
 	p.load(fname);
 	if (p.parse()) {

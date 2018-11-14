@@ -8,7 +8,7 @@ class RunTreeA {
 public:
 	typedef dbas::Node Node;
 	Node prog;
-	vector<map<string, int>> vars;
+	vector<map<string, vector<int>>> vars;
 	
 	int run() {
 		try {
@@ -25,7 +25,9 @@ public:
 		printf("-------------------\n");
 		for (const auto& frame : vars) {
 			for (const auto& v : frame)
-				printf("  %10s : %4d\n", v.first.c_str(), v.second);
+				printf("  %10s [%2d]: %4d\n", 
+					v.first.c_str(), 
+					v.second.size(), v.second[0] );
 			printf("-------------------\n");
 		}
 		return 0;
@@ -51,22 +53,23 @@ private:
 		// consts
 		for (auto& nn : n.kids.at(0).kids) {
 			auto& name = nn.val;
-			auto& val = get_named_node(nn, "value");
-			vars.back()[name] = run_lit( val.kids.at(0) );
+			auto val = run_expression( get_named_node(nn, "value" ).kids.at(0) );
+			auto len = 1;
+			vars.back()[name].resize(len, val);  // create and fill
 		}
 		// vars
 		for (auto& nn : n.kids[1].kids) {
 			auto& name = nn.val;
-			auto& val = get_named_node(nn, "value");
-			// auto& len = get_named_node(nn, "length");
-			vars.back()[name] = run_expression( val.kids.at(0) );
+			auto val = run_expression( get_named_node(nn, "value" ).kids.at(0) );
+			auto len = run_expression( get_named_node(nn, "length").kids.at(0) );
+			vars.back()[name].resize(len, val);  // create and fill
 		}
 	}
 
 	// WARNING: this doesn't care for const!
 	int& get_var(const string& name) {
-		if (vars.back().count(name)) return vars.back()[name];  // local
-		if (vars.at(0).count(name))  return vars[0][name];  // global
+		if (vars.back().count(name)) return vars.back()[name][0];  // local
+		if (vars.at(0).count(name))  return vars[0][name][0];  // global
 		throw string("var not found: "+name);
 	}
 
